@@ -8,6 +8,7 @@
 *.RData
 *.Ruserdata
 *.Rproj
+*.Rproj.user
 
 # Ignore log files
 *.log
