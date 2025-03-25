@@ -1,0 +1,22 @@
+# Ignore all data folders
+**/data/
+
+# Ignore R history files
+*.Rhistory
+
+# Ignore R session files
+*.RData
+*.Ruserdata
+*.Rproj
+
+# Ignore log files
+*.log
+
+# Ignore temporary files
+*.tmp
+*.swp
+*.bak
+
+# Ignore hidden system files (e.g., macOS)
+.DS_Store
+Thumbs.db
