@@ -91,6 +91,24 @@ siteInfo_sample[,2] <- newclimIDs_forSiteInfo
 
 
 
+save_params_args = list(save_params_dir = "hello", save_n_rows = 5)
+init_wrapper(InitMultiSite, siteInfo = siteInfo, save_params_args = save_params_args)
+
+
+
+siteInfo[c(1,2,1),]
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
