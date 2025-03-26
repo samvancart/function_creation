@@ -21,3 +21,6 @@
 # Ignore hidden system files (e.g., macOS)
 .DS_Store
 Thumbs.db
+
+# Ignore env
+*.Renviron

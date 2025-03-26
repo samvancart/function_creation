@@ -91,7 +91,14 @@ siteInfo_sample[,2] <- newclimIDs_forSiteInfo
 
 
 
-save_params_args = list(save_params_dir = "hello", save_n_rows = 5)
+t_run$multiInitVar[c(1:5),,]
+dim(t_run$multiInitVar)
+
+res <- filter_one_dimension(clim1, "m", 1, indices = c(1:5))
+dim(res)
+
+
+save_params_args = list(save_params_dir = "hello", save_n_rows = 2)
 init_wrapper(InitMultiSite, siteInfo = siteInfo, save_params_args = save_params_args)
 
 
