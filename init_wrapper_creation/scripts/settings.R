@@ -34,7 +34,7 @@ rm(vPREBAS, RprebassoFolder)
 library(data.table)
 library(Rprebasso)
 library(testthat)
-
+library(mockery)
 
 
 

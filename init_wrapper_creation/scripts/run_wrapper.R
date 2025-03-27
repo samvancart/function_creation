@@ -4,7 +4,7 @@ source("r/init_wrapper.R")
 
 # PATHS -------------------------------------------------------------------
 
-base_path <- "../forest-navigator23-r/data/acc/input/simulation_sites_200/clean/plgid_7302942"
+base_path <- "../../forest-navigator23-r/data/acc/input/simulation_sites_200/clean/plgid_7302942"
 files <- list.files(base_path, recursive = T, full.names = T)
 
 
@@ -37,57 +37,70 @@ nYears <- floor(ncol(climate_data$parTran)/365)
 nSites <- nrow(siteInfo)
 nYearsMS <- rep(nYears, nSites)
 
+dim(climate_data[["parTran"]])
+dimnames(climate_data[["parTran"]][,-1])
 
 # RUN ---------------------------------------------------------------------
 
-args <- list(nYearsMS = nYearsMS,
+init_args <- list(nYearsMS = nYearsMS,
              siteInfo = as.matrix(siteInfo),
              multiInitVar = multiInitVar,
              PAR = climate_data[["parTran"]][,-1], # Remove cell column (column was required for siteInfo)
              VPD = climate_data[["vpdTran"]][,-1],
              CO2 = climate_data[["co2Tran"]][,-1],
              Precip = climate_data[["precipTran"]][,-1],
-             TAir = climate_data[["tairTran"]][,-1])
+             TAir = climate_data[["tairTran"]][,-1],
+             ClCut = 1)
 
 
+
+save_params_args = list(save_params_dir = paste0(getwd()), save_n_rows = 10)
+args <- c(list(init_FUN = InitMultiSite, 
+               save_params_args = save_params_args), 
+          init_args)
+
+names(init_args)
+
+filtered_init_params <- do.call(init_wrapper, args)
+
+
+init_params_check_function_exists("InitMultiSite")
+exists("InitMultiSite", mode = "function")
 
 initPrebas <- init_wrapper(InitMultiSite, args)
 
+Rprebasso::InitMultiSite
 
+dim(init_args$siteInfo)
+dimnames(init_args$multiInitVar)
+do.call(InitMultiSite, init_args)
 
-
-
-library(Rprebasso)
+# TRANSECT -----------------------------------------------------------------
+?TransectRun
 
 t_run <- TransectRun()
 
+
 siteInfo <- t_run$siteInfo
 
-set.seed(123)
-siteInfo_sample <- siteInfo[c(sample(1:7,3),3),]
 
-oldclimIds <- unique(siteInfo_sample[,2])
-newclimIds <- 1:length(oldclimIds)
-new <- newclimIds[match(siteInfo_sample[,2], oldclimIds)]
-
-newclimIDs_forSiteInfo <- newclimIds[match(siteInfo_sample[,2],oldclimIds)]
-
-
-# new weather inputs
 names(t_run)
 
-dim(t_run$weather)
-class(t_run$weather)
+t_run$nYears
 
+test_years <- init_params_filter_valid_numeric_vec(t_run$nYears, "nYearsMS", c(1:15))
+
+# new weather inputs
 clim <- t_run$weather
-
 clim1 <- matrix(clim[,,,1], nrow = nrow(clim), ncol = ncol(clim) * dim(clim)[3])
 
-new_clim1 <- clim1[oldclimIds,]
-new_clim1[, 1:20]
 
-newPar <- Par[oldclimIds,]
-siteInfo_sample[,2] <- newclimIDs_forSiteInfo
+clim <- t_run$weather
+clim_list <- lapply(seq_len(dim(clim)[4]), function(i) {
+  matrix(clim[,,,i], nrow = nrow(clim), ncol = ncol(clim) * dim(clim)[3])
+})
+names(clim_list) <-  c("PAR", "TAir", "VPD", "Precip", "CO2")
+
 
 
 

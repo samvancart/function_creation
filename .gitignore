@@ -24,3 +24,6 @@ Thumbs.db
 
 # Ignore env
 *.Renviron
+
+# Txt
+*code.txt

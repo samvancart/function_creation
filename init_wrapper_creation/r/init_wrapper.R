@@ -30,6 +30,15 @@ init_params_check_valid_object <- function(object, name) {
   return(object)
 }
 
+init_params_check_function_exists <- function(fun_name) {
+
+  if (!exists(fun_name, mode = "function", envir = parent.frame())) {
+    stop(paste("The function", fun_name, "does not exist."))
+  }
+  
+  return(TRUE)
+}
+
 
 
 
@@ -38,11 +47,24 @@ init_params_check_valid_object <- function(object, name) {
 # Combine user-provided arguments with defaults, excluding specified ones.
 # You can then pass only the relevant args to a specific function.
 get_user_args_list <- function(all_args_list, default_args_list, exclude_args_vec) {
+  # Type checks
+  if (!is.list(all_args_list)) {
+    stop("all_args_list must be a list")
+  }
+  if (!is.list(default_args_list)) {
+    stop("default_args_list must be a list")
+  }
+  if (!is.character(exclude_args_vec)) {
+    stop("exclude_args_vec must be a character vector")
+  }
+  
+  # Core logic
   user_args <- all_args_list[setdiff(names(all_args_list), exclude_args_vec)]
-  args <-  modifyList(default_args_list, user_args)
+  args <- modifyList(default_args_list, user_args)
   
   return(args)
 }
+
 
 
 # GET_SITES ---------------------------------------------------------------
@@ -78,7 +100,7 @@ init_params_get_sites <- function(siteInfo, save_n_rows = 1000, is_sample = TRUE
     save_n_rows <- 1000
   }
   
-  # Return head when no sampling
+  # Return head rows when no sampling
   if(!is_sample) {
     return(1:nrow(head(siteInfo, n = save_n_rows)))
   }
@@ -109,12 +131,11 @@ init_params_generate_new_ids <- function(climate_ids) {
   return(list(old_clim_ids = old_clim_ids, new_clim_ids = new_clim_ids))
 }
 
-# Function to remap climate IDs
+# Helper to remap climate IDs
 init_params_remap_climate_ids <- function(climate_ids, old_clim_ids, new_clim_ids) {
   return(new_clim_ids[match(climate_ids, old_clim_ids)])
 }
 
-# Refactored main function
 init_params_get_new_siteInfo_and_old_clim_ids <- function(siteInfo, rows_vec) {
   # Step 1: Filter siteInfo
   filtered_siteInfo <- init_params_filter_siteInfo(siteInfo, rows_vec)
@@ -219,30 +240,46 @@ init_params_save_to_dir <- function(init_params, save_params_dir, suffix_name = 
 
 
 
-init_wrapper <- function(init_FUN, ..., save_params_args = list(save_params_dir = NULL)) {
+init_wrapper <- function(save_params_args = list(save_params_dir = NULL), ...) {
+  
+  init_params_check_function_exists(fun_name = "InitMultiSite")
+  
   if(!is.null(save_params_args$save_params_dir)) {
+    
     init_params <- list(...)
     
+
+# VALIDATE PARAMS ---------------------------------------------------------
+
     required_init_param_names <- c("nYearsMS", "siteInfo", "multiInitVar", "PAR", "TAir", "VPD", "Precip", "CO2")
+    init_params_check_missing(init_params = init_params, required_init_param_names = required_init_param_names)
     
-    init_params_check_missing(init_params = ..., required_init_param_names = required_init_param_names)
     
+# HANDLE_SITEINFO ---------------------------------------------------------
+
+    
+
     # Check if user has provided additional params for "init_params_get_sites" function
     get_sites_default_args <- list(save_n_rows = 1000, is_sample = TRUE, seed = 123)
+    
     get_sites_args <- get_user_args_list(all_args_list = save_params_args, 
                                          default_args_list = get_sites_default_args,
                                          exclude_args_vec = c("save_params_dir"))
     
     
     siteInfo <- init_params_check_valid_object(object = init_params$siteInfo, name = "siteInfo")
-    sites <- do.call(init_params_get_sites, c(list(siteInfo = siteInfo), get_sites_args))
     
-    filtered_siteInfo_list <- init_params_get_new_siteInfo_and_old_clim_ids(siteInfo = siteInfo, rows_vec = sites)
+    new_siteInfo_indices <- do.call(init_params_get_sites, c(list(siteInfo = siteInfo), get_sites_args))
     
-    new_siteInfo <- filtered_siteInfo_list$new_siteInfo
-    old_clim_ids <- filtered_siteInfo_list$old_clim_ids
+    new_siteInfo_and_old_clim_ids_list <- init_params_get_new_siteInfo_and_old_clim_ids(siteInfo = siteInfo, rows_vec = new_siteInfo_indices)
     
-    print(new_siteInfo)
+    new_siteInfo <- new_siteInfo_and_old_clim_ids_list$new_siteInfo
+    old_clim_ids <- new_siteInfo_and_old_clim_ids_list$old_clim_ids
+    
+
+# HANDLE_OTHER_OBJECTS ----------------------------------------------------
+
+    
     
     # Validate objects and filter dimension 1
     new_PAR <- init_params_filter_valid_object(object = init_params$PAR, name = "PAR", indices = old_clim_ids)
@@ -252,11 +289,15 @@ init_wrapper <- function(init_FUN, ..., save_params_args = list(save_params_dir 
     new_CO2 <- init_params_filter_valid_object(object = init_params$CO2, name = "CO2", indices = old_clim_ids)
     
     new_multiInitVar <- init_params_filter_valid_object(object = init_params$multiInitVar, name = "multiInitVar", 
-                                                        indices = sites)
+                                                        indices = new_siteInfo_indices)
     
-    new_nYearsMS <- init_params_filter_numeric_vec(object = init_params$nYearsMS, name = "nYearsMS", 
-                                                   indices = c(1:length(sites)))
-    
+    new_nYearsMS <- init_params_filter_valid_numeric_vec(vec = init_params$nYearsMS, name = "nYearsMS", 
+                                                   indices = c(1:length(new_siteInfo_indices)))
+ 
+
+# NEW_PARAMS --------------------------------------------------------------
+
+       
     new_params <- list(nYearsMS = new_nYearsMS,
                        siteInfo = new_siteInfo,
                        multiInitVar = new_multiInitVar,
@@ -266,12 +307,17 @@ init_wrapper <- function(init_FUN, ..., save_params_args = list(save_params_dir 
                        Precip = new_Precip,
                        CO2 = new_CO2)
 
+
     filtered_init_params <- modifyList(init_params, new_params)
     
-    
+
+# SAVE --------------------------------------------------------------------
+
+ 
+       
     # Exclude all args except the ones for "init_params_save_to_dir"
     save_to_dir_exclude_args_vec <- names(save_params_args[!names(save_params_args) %in% c("save_params_dir", "suffix_name")])
-    save_to_dir_default_args <- c(suffix_name = NULL)
+    save_to_dir_default_args <- list(suffix_name = NULL)
     save_to_dir_filtered_args <- get_user_args_list(all_args_list = save_params_args, 
                                            default_args_list = save_to_dir_default_args,
                                            exclude_args_vec = save_to_dir_exclude_args_vec)
@@ -283,10 +329,10 @@ init_wrapper <- function(init_FUN, ..., save_params_args = list(save_params_dir 
     do.call(init_params_save_to_dir, save_to_dir_args)
     
   }
-  
-  # initPrebas <- do.call(init_FUN, ...)
-  # 
-  # return(initPrebas)
+
+  initPrebas <- InitMultiSite(...)
+
+  return(initPrebas)
 }
 
 

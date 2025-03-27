@@ -67,6 +67,39 @@ test_that("get_user_args_list adds arguments from all_args_list that are not in 
   expect_equal(result, list(a = 10, b = 20, c = 30))
 })
 
+test_that("get_user_args_list throws an error when all_args_list is not a list", {
+  all_args_list <- "not_a_list"
+  default_args_list <- list(a = 1, b = 2)
+  exclude_args_vec <- character()
+  
+  expect_error(
+    get_user_args_list(all_args_list, default_args_list, exclude_args_vec),
+    "all_args_list must be a list"
+  )
+})
+
+test_that("get_user_args_list throws an error when default_args_list is not a list", {
+  all_args_list <- list(a = 1)
+  default_args_list <- "not_a_list"
+  exclude_args_vec <- character()
+  
+  expect_error(
+    get_user_args_list(all_args_list, default_args_list, exclude_args_vec),
+    "default_args_list must be a list"
+  )
+})
+
+test_that("get_user_args_list throws an error when exclude_args_vec is not a character vector", {
+  all_args_list <- list(a = 1, b = 2)
+  default_args_list <- list(a = 1, b = 2)
+  exclude_args_vec <- 123 # Not a character vector
+  
+  expect_error(
+    get_user_args_list(all_args_list, default_args_list, exclude_args_vec),
+    "exclude_args_vec must be a character vector"
+  )
+})
+
 
 
 
@@ -439,4 +472,115 @@ test_that("init_params_save_to_dir saves file without suffix_name", {
 
 
 
+
+
+
+# TEST MAIN_FUN -----------------------------------------------------------
+
+
+# test_that("init_wrapper returns filtered parameters and runs initPrebas without errors", {
+#   
+#   # Step 1: Get transectRun for test data
+#   test_data <- readRDS("tests/data/transectRun.rds")
+#   
+#   siteInfo <- test_data$siteInfo 
+# 
+#   # Create the two new columns of 1s
+#   new_cols <- matrix(1, nrow = nrow(siteInfo), ncol = 2)
+#   
+#   # Insert the new columns at positions 8 and 9
+#   mat_with_new_cols <- cbind(
+#     siteInfo[, 1:7],        # Keep the first 7 columns
+#     new_cols,          # Add the new columns
+#     siteInfo[, 8:10]        # Append the remaining columns (from the 8th to 10th in original)
+#   )
+#   
+#   current_dimnames <- dimnames(siteInfo)
+#   updated_colnames <- c(
+#     current_dimnames[[2]][1:7],  # Keep original column names for the first 7 columns
+#     "nLayers", "nSpecies",        # Add new column names
+#     current_dimnames[[2]][8:10]  # Append original column names for columns 8-10
+#   )
+#   
+#   dimnames(mat_with_new_cols)[[2]] <- list(current_dimnames[[2]], updated_colnames)  # Update dimnames
+#   
+#   # View the result
+#   siteInfo <- mat_with_new_cols
+#   
+#  
+# 
+#   multiInitVar <- test_data$multiInitVar
+#   
+#   clim <- test_data$weather
+#   clim_list <- lapply(seq_len(dim(clim)[4]), function(i) {
+#     mat <- matrix(clim[,,,i], nrow = nrow(clim), ncol = ncol(clim) * dim(clim)[3])
+#     dimnames(mat) <- list(NULL, 1:ncol(mat))
+#     mat
+#   })
+#   names(clim_list) <-  c("PAR", "TAir", "VPD", "Precip", "CO2")
+#   
+#   
+#   PAR <- clim_list$PAR
+#   TAir <- clim_list$TAir
+#   VPD <- clim_list$VPD
+#   Precip <- clim_list$Precip
+#   CO2 <- clim_list$CO2
+# 
+#   nYearsMS <- test_data$nYears
+#   
+#   dim(siteInfo)
+#   
+#   result <- InitMultiSite(
+#     nYearsMS = nYearsMS,
+#     siteInfo = NA,
+#     multiInitVar = NA,
+#     PAR = PAR,
+#     TAir = TAir,
+#     VPD = VPD,
+#     Precip = Precip,
+#     CO2 = CO2
+#   )
+#   
+#   
+#   result <- InitMultiSite(
+#     nYearsMS = nYearsMS,
+#     siteInfo = siteInfo,
+#     multiInitVar = multiInitVar,
+#     PAR = PAR,
+#     TAir = TAir,
+#     VPD = VPD,
+#     Precip = Precip,
+#     CO2 = CO2
+#   )
+#   
+#   
+#   
+#   # Step 2: Mock `init_params_save_to_dir` function
+#   mock_save <- mock(TRUE)
+#   
+#   # Step 3: Replace `init_params_save_to_dir` within the test
+#   with_mock(
+#     init_params_save_to_dir = mock_save,
+#     {
+#       save_params_args <- list(save_params_dir = NULL)
+#       
+#       result <- init_wrapper(
+#         save_params_args = save_params_args,
+#         nYearsMS = nYearsMS,
+#         siteInfo = siteInfo,
+#         multiInitVar = multiInitVar,
+#         PAR = PAR,
+#         TAir = TAir,
+#         VPD = VPD,
+#         Precip = Precip,
+#         CO2 = CO2
+#       )
+#       
+#       
+#       
+#       # Check if the mock function was called
+#       expect_called(mock_save, 0) # This asserts that the mock was NOT triggered since saving is skipped
+#     }
+#   )
+# })
 
