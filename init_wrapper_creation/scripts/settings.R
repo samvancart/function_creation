@@ -35,7 +35,16 @@ library(data.table)
 library(Rprebasso)
 library(testthat)
 library(mockery)
+library(yaml)
 
+
+
+if(!exists("config_path")) {
+  # Path to config file
+  config_path <- paste0("config.yml")
+}
+
+config <- yaml.load_file(config_path)
 
 
 

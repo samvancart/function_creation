@@ -1,11 +1,9 @@
 source("scripts/settings.R")
 source("r/init_wrapper.R")
 
-
 # PATHS -------------------------------------------------------------------
 
-base_path <- "../../forest-navigator23-r/data/acc/input/simulation_sites_200/clean/plgid_7302942"
-files <- list.files(base_path, recursive = T, full.names = T)
+files <- list.files(config$run_wrapper_base_path, recursive = T, full.names = T)
 
 
 # GET_VARS ----------------------------------------------------------------
@@ -54,14 +52,15 @@ init_args <- list(nYearsMS = nYearsMS,
 
 
 
-save_params_args = list(save_params_dir = paste0(getwd()), save_n_rows = 10)
-args <- c(list(init_FUN = InitMultiSite, 
-               save_params_args = save_params_args), 
+save_params_args = list(save_params_dir = paste0(getwd()), save_n_rows = 10, suffix_name = "test")
+args <- c(list(save_params_args = save_params_args), 
           init_args)
 
 names(init_args)
 
 filtered_init_params <- do.call(init_wrapper, args)
+
+
 
 
 init_params_check_function_exists("InitMultiSite")
@@ -117,22 +116,6 @@ init_wrapper(InitMultiSite, siteInfo = siteInfo, save_params_args = save_params_
 
 
 siteInfo[c(1,2,1),]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

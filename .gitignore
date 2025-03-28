@@ -27,3 +27,9 @@ Thumbs.db
 
 # Txt
 *code.txt
+
+# Ignore config files
+*.yml
+*.yaml
+
+

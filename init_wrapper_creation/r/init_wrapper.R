@@ -239,12 +239,81 @@ init_params_save_to_dir <- function(init_params, save_params_dir, suffix_name = 
 # MAIN_FUN ----------------------------------------------------------------
 
 
+#' Wrapper function for InitMultiSite.
+#'
+#' Returns the result of calling \code{InitMultiSite} with the arguments specified in \code{...}.
+#' Optionally saves a sample of the parameters into a directory specified in \code{save_params_args}.
+#' The created file will be called \code{initMultiSiteParams_<unique_string><_optional_string>.RData}.
+#' The created object will be called \code{init_params}.
+#'
+#' @param save_params_args A list that can contain the following arguments:
+#'   \itemize{
+#'     \item \code{save_params_dir}: The directory to save the parameters into as .RData. 
+#'           If \code{NULL} (default), then nothing is saved.
+#'     \item \code{save_n_rows}: The number of rows (between 1 and 2500) to be sampled 
+#'           from \code{siteInfo} with \code{replacement = TRUE}. The default is \code{1000}, which will be 
+#'           set if the provided value is out of bounds. A vector of length \code{nrow(siteInfo)} will be 
+#'           returned if the value is larger than \code{nrow(siteInfo)}.
+#'     \item \code{is_sample}: Logical. Whether to sample (\code{is_sample = TRUE}) or to return the first
+#'           \code{save_n_rows} without sampling (\code{is_sample = FALSE}).
+#'     \item \code{seed}: Optionally sets the seed for sampling (default is \code{123}).
+#'     \item \code{suffix_name}: An optional string that will be added to the filename in the format
+#'           \code{filename_<suffix_name>.RData}.
+#'   }
+#' @param ... Additional arguments passed to \code{InitMultiSite}.
+#'
+#' @return The result of calling \code{InitMultiSite}.
+#'
+#' @examples
+#' @examples
+#' # Simple example: Only save_params_dir is set
+#' save_params_args <- list(
+#'   save_params_dir = "results/"
+#' )
+#'
+#' result <- init_wrapper(
+#'   save_params_args = save_params_args,
+#'   nYearsMS = nYearsMS,
+#'   siteInfo = siteInfo,
+#'   multiInitVar = multiInitVar,
+#'   PAR = PAR,
+#'   TAir = TAir,
+#'   VPD = VPD,
+#'   Precip = Precip,
+#'   CO2 = CO2
+#' )
+#'
+#' # Example with sampling:
+#' save_params_args <- list(
+#'   save_params_dir = "results/",
+#'   save_n_rows = 500,
+#'   seed = 42,
+#'   suffix_name = "experiment1"
+#' )
+#'
+#' result <- init_wrapper(
+#'   save_params_args = save_params_args,
+#'   nYearsMS = nYearsMS,
+#'   siteInfo = siteInfo,
+#'   multiInitVar = multiInitVar,
+#'   PAR = PAR,
+#'   TAir = TAir,
+#'   VPD = VPD,
+#'   Precip = Precip,
+#'   CO2 = CO2
+#' )
+#'
+#'
+#' @seealso \code{\link{InitMultiSite}}
 
 init_wrapper <- function(save_params_args = list(save_params_dir = NULL), ...) {
   
   init_params_check_function_exists(fun_name = "InitMultiSite")
   
   if(!is.null(save_params_args$save_params_dir)) {
+    
+    print("Saving init params with the following arguments:")
+    print(save_params_args)
     
     init_params <- list(...)
     
@@ -325,15 +394,21 @@ init_wrapper <- function(save_params_args = list(save_params_dir = NULL), ...) {
     # Add filtered init_params to save args
     save_to_dir_args <- c(list(init_params = filtered_init_params), save_to_dir_filtered_args)
     
+    
     # Save
     do.call(init_params_save_to_dir, save_to_dir_args)
     
   }
+  
+  cat("\n")
+  print("Running InitMultiSite...")
+  cat("\n")
 
   initPrebas <- InitMultiSite(...)
 
   return(initPrebas)
 }
+
 
 
 
