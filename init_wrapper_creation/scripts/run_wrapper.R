@@ -82,6 +82,7 @@ t_run <- TransectRun()
 
 siteInfo <- t_run$siteInfo
 
+t_run$thinning
 
 names(t_run)
 

@@ -180,8 +180,7 @@ test_that("init_params_get_sites adjusts save_n_rows to nrow(siteInfo) when save
 
 test_that("init_params_get_sites handles edge case when nrow(siteInfo) == 0", {
   siteInfo <- matrix(numeric(), nrow = 0, ncol = 10)
-  result <- init_params_get_sites(siteInfo, save_n_rows = 5)
-  expect_equal(length(result), 0) # No rows to sample
+  expect_error(init_params_get_sites(siteInfo, save_n_rows = 5), "Object siteInfo must contain at least 1 row.")
 })
 
 
@@ -540,6 +539,233 @@ test_that("init_wrapper runs when save_params_dir is not NULL", {
   
 })
 
+test_that("init_wrapper returns error when siteInfo is NA", {
+  
+  mock_save <- mock()
+  mock_InitMultiSite <- mock()
+  mock_print <- mock()
+  
+  local_mock(
+    init_params_save_to_dir = mock_save,
+    InitMultiSite = mock_InitMultiSite,
+    print = mock_print
+  )
+  
+  save_params_args <- list(save_params_dir = "mock/dir", save_n_rows = 7)
+  
+  expect_error(init_wrapper(
+    save_params_args = save_params_args,
+    nYearsMS = nYearsMS,
+    siteInfo = NA,
+    multiInitVar = multiInitVar,
+    PAR = PAR,
+    TAir = TAir,
+    VPD = VPD,
+    Precip = Precip,
+    CO2 = CO2
+  ), "Invalid type for object siteInfo. Type is logical")
+  
+  # Check if the mock functions were called
+  expect_called(mock_save, 0)
+  expect_called(mock_InitMultiSite, 0)
+  
+})
+
+test_that("init_wrapper returns error when siteInfo does not exist", {
+  
+  mock_save <- mock()
+  mock_InitMultiSite <- mock()
+  mock_print <- mock()
+  
+  local_mock(
+    init_params_save_to_dir = mock_save,
+    InitMultiSite = mock_InitMultiSite,
+    print = mock_print
+  )
+  
+  save_params_args <- list(save_params_dir = "mock/dir", save_n_rows = 7)
+  
+  expect_warning(
+    expect_error(init_wrapper(
+      save_params_args = save_params_args,
+      nYearsMS = nYearsMS,
+      multiInitVar = multiInitVar,
+      PAR = PAR,
+      TAir = TAir,
+      VPD = VPD,
+      Precip = Precip,
+      CO2 = CO2
+    ), "Invalid type for object siteInfo. Type is NULL"),
+    "Unable to save initialisation parameters because the following required parameters are missing: siteInfo"
+  )
+
+  
+  # Check if the mock functions were called
+  expect_called(mock_save, 0)
+  expect_called(mock_InitMultiSite, 0)
+  
+})
+
+test_that("init_wrapper runs when multiInitVar is NA", {
+  
+  mock_save <- mock()
+  mock_InitMultiSite <- mock()
+  mock_print <- mock()
+  
+  local_mock(
+    init_params_save_to_dir = mock_save,
+    InitMultiSite = mock_InitMultiSite,
+    print = mock_print
+  )
+  
+  save_params_args <- list(save_params_dir = "mock/dir", save_n_rows = 7)
+  
+  result <- init_wrapper(
+    save_params_args = save_params_args,
+    nYearsMS = nYearsMS,
+    siteInfo = siteInfo,
+    multiInitVar = NA,
+    PAR = PAR,
+    TAir = TAir,
+    VPD = VPD,
+    Precip = Precip,
+    CO2 = CO2
+  )
+  
+  # Check if the mock functions were called
+  expect_called(mock_save, 1)
+  expect_called(mock_InitMultiSite, 1)
+  
+})
+
+test_that("init_wrapper runs when multiInitVar does not exist", {
+  
+  mock_save <- mock()
+  mock_InitMultiSite <- mock()
+  mock_print <- mock()
+  
+  local_mock(
+    init_params_save_to_dir = mock_save,
+    InitMultiSite = mock_InitMultiSite,
+    print = mock_print
+  )
+  
+  save_params_args <- list(save_params_dir = "mock/dir", save_n_rows = 7)
+  
+  result <- init_wrapper(
+    save_params_args = save_params_args,
+    nYearsMS = nYearsMS,
+    siteInfo = siteInfo,
+    PAR = PAR,
+    TAir = TAir,
+    VPD = VPD,
+    Precip = Precip,
+    CO2 = CO2
+  )
+  
+  # Check if the mock functions were called
+  expect_called(mock_save, 1)
+  expect_called(mock_InitMultiSite, 1)
+  
+})
+
+test_that("init_wrapper runs when multiThin exists", {
+  
+  mock_save <- mock()
+  mock_InitMultiSite <- mock()
+  mock_print <- mock()
+  
+  local_mock(
+    init_params_save_to_dir = mock_save,
+    InitMultiSite = mock_InitMultiSite,
+    print = mock_print
+  )
+  
+  save_params_args <- list(save_params_dir = "mock/dir", save_n_rows = 7)
+  
+  result <- init_wrapper(
+    save_params_args = save_params_args,
+    nYearsMS = nYearsMS,
+    siteInfo = siteInfo,
+    multiInitVar = multiInitVar,
+    multiThin = multiThin,
+    PAR = PAR,
+    TAir = TAir,
+    VPD = VPD,
+    Precip = Precip,
+    CO2 = CO2
+  )
+  
+  # Check if the mock functions were called
+  expect_called(mock_save, 1)
+  expect_called(mock_InitMultiSite, 1)
+  
+})
+
+test_that("init_wrapper runs when multiThin is NA", {
+  
+  mock_save <- mock()
+  mock_InitMultiSite <- mock()
+  mock_print <- mock()
+  
+  local_mock(
+    init_params_save_to_dir = mock_save,
+    InitMultiSite = mock_InitMultiSite,
+    print = mock_print
+  )
+  
+  save_params_args <- list(save_params_dir = "mock/dir", save_n_rows = 7)
+  
+  result <- init_wrapper(
+    save_params_args = save_params_args,
+    nYearsMS = nYearsMS,
+    siteInfo = siteInfo,
+    multiThin = NA,
+    PAR = PAR,
+    TAir = TAir,
+    VPD = VPD,
+    Precip = Precip,
+    CO2 = CO2
+  )
+  
+  # Check if the mock functions were called
+  expect_called(mock_save, 1)
+  expect_called(mock_InitMultiSite, 1)
+  
+})
+
+test_that("init_wrapper runs when multiThin does not exist", {
+  
+  mock_save <- mock()
+  mock_InitMultiSite <- mock()
+  mock_print <- mock()
+  
+  local_mock(
+    init_params_save_to_dir = mock_save,
+    InitMultiSite = mock_InitMultiSite,
+    print = mock_print
+  )
+  
+  save_params_args <- list(save_params_dir = "mock/dir", save_n_rows = 7)
+  
+  result <- init_wrapper(
+    save_params_args = save_params_args,
+    nYearsMS = nYearsMS,
+    siteInfo = siteInfo,
+    multiInitVar = multiInitVar,
+    PAR = PAR,
+    TAir = TAir,
+    VPD = VPD,
+    Precip = Precip,
+    CO2 = CO2
+  )
+  
+  # Check if the mock functions were called
+  expect_called(mock_save, 1)
+  expect_called(mock_InitMultiSite, 1)
+  
+})
+
 test_that("init_wrapper passes correct args to save function", {
   
   mock_save <- mock()
@@ -559,6 +785,7 @@ test_that("init_wrapper passes correct args to save function", {
     nYearsMS = nYearsMS,
     siteInfo = siteInfo,
     multiInitVar = multiInitVar,
+    multiThin = multiThin,
     PAR = PAR,
     TAir = TAir,
     VPD = VPD,
@@ -575,6 +802,7 @@ test_that("init_wrapper passes correct args to save function", {
   init_params <- list(nYearsMS = nYearsMS,
                       siteInfo = siteInfo,
                       multiInitVar = multiInitVar,
+                      multiThin = multiThin,
                       PAR = PAR,
                       TAir = TAir,
                       VPD = VPD,
@@ -587,6 +815,60 @@ test_that("init_wrapper passes correct args to save function", {
               suffix_name = NULL,
               save_params_dir = "mock/dir")
 })
+
+test_that("init_wrapper passes correct args to save function when NAs and NULLs exist", {
+  
+  mock_save <- mock()
+  mock_InitMultiSite <- mock()
+  mock_print <- mock()
+  
+  local_mock(
+    init_params_save_to_dir = mock_save,
+    InitMultiSite = mock_InitMultiSite,
+    print = mock_print
+  )
+  
+  save_params_args <- list(save_params_dir = "mock/dir", save_n_rows = 7, is_sample = FALSE)
+  
+  result <- init_wrapper(
+    save_params_args = save_params_args,
+    nYearsMS = nYearsMS,
+    siteInfo = siteInfo,
+    multiInitVar = NULL,
+    multiThin = NA,
+    PAR = PAR,
+    TAir = TAir,
+    VPD = VPD,
+    Precip = Precip,
+    CO2 = CO2
+  )
+  
+  # Check if the mock functions were called
+  expect_called(mock_save, 1)
+  expect_called(mock_InitMultiSite, 1)
+  
+  # Assert that arguments were passed correctly
+  # mockery::expect_call(mock_save, 1, "mock/dir")
+  init_params <- list(nYearsMS = nYearsMS,
+                      siteInfo = siteInfo,
+                      multiInitVar = NA,
+                      multiThin = NA,
+                      PAR = PAR,
+                      TAir = TAir,
+                      VPD = VPD,
+                      Precip = Precip,
+                      CO2 = CO2)
+  
+  expect_args(mock_object = mock_save, 
+              n= 1,
+              init_params = init_params,
+              suffix_name = NULL,
+              save_params_dir = "mock/dir")
+})
+
+
+
+
 
 
 

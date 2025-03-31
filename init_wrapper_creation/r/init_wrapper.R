@@ -15,7 +15,14 @@ init_params_check_missing <- function(init_params, required_init_param_names) {
 }
 
 
-init_params_check_valid_object <- function(object, name) {
+init_params_check_valid_object <- function(object, name, null_ok = FALSE) {
+  
+  if(null_ok) {
+    if(all(is.null(object)) | all(is.na(object))) {
+      return(object)
+    }
+  }
+  
   
   if(all(!class(object) %in% c("matrix", "array"))) {
     msg <- paste0("Invalid type for object ", name, ". Type is ", class(object))
@@ -23,7 +30,7 @@ init_params_check_valid_object <- function(object, name) {
   }
   
   if(nrow(object) < 1) {
-    msg <- paste0("Object ", name, "must contain at least 1 row.")
+    msg <- paste0("Object ", name, " must contain at least 1 row.")
     stop(msg)
   }
   
@@ -75,6 +82,9 @@ get_user_args_list <- function(all_args_list, default_args_list, exclude_args_ve
 # selecting the vector 1:save_n_rows. Sampling is done with replace=TRUE.
 init_params_get_sites <- function(siteInfo, save_n_rows = 1000, is_sample = TRUE, seed = 123, ...) {
   
+
+  init_params_check_valid_object(siteInfo, "siteInfo")
+
   max_save_n_rows <- 2500
   
   if(length(save_n_rows) > 1) {
@@ -174,9 +184,17 @@ init_params_filter_one_dimension <- function(object, name, dim_to_filter, indice
 }
 
 
-init_params_filter_valid_object <- function(object, name, indices, dim_to_filter = 1) {
+init_params_filter_valid_object <- function(object, name, indices, dim_to_filter = 1, ...) {
   # Validate object using init_params_check_valid_object
-  valid_object <- init_params_check_valid_object(object = object, name = name)
+  valid_object <- init_params_check_valid_object(object = object, name = name, ...)
+  
+  if(all(is.na(valid_object))) {
+    return(NA)
+  }
+  
+  if(all(is.null(valid_object))) {
+    return(NA)
+  }
   
   filtered_object <- init_params_filter_one_dimension(object = object, name = name, 
                                                       indices = indices, dim_to_filter = dim_to_filter)
@@ -320,7 +338,8 @@ init_wrapper <- function(save_params_args = list(save_params_dir = NULL), ...) {
 
 # VALIDATE PARAMS ---------------------------------------------------------
 
-    required_init_param_names <- c("nYearsMS", "siteInfo", "multiInitVar", "PAR", "TAir", "VPD", "Precip", "CO2")
+    # multiInitVar and multiThin can be NA
+    required_init_param_names <- c("nYearsMS", "siteInfo", "PAR", "TAir", "VPD", "Precip", "CO2")
     init_params_check_missing(init_params = init_params, required_init_param_names = required_init_param_names)
     
     
@@ -358,7 +377,11 @@ init_wrapper <- function(save_params_args = list(save_params_dir = NULL), ...) {
     new_CO2 <- init_params_filter_valid_object(object = init_params$CO2, name = "CO2", indices = old_clim_ids)
     
     new_multiInitVar <- init_params_filter_valid_object(object = init_params$multiInitVar, name = "multiInitVar", 
-                                                        indices = new_siteInfo_indices)
+                                                        indices = new_siteInfo_indices, null_ok = TRUE)
+    
+    
+    new_multiThin <- init_params_filter_valid_object(object = init_params$multiThin, name = "multiThin", 
+                                                     indices = new_siteInfo_indices, null_ok = TRUE)
     
     new_nYearsMS <- init_params_filter_valid_numeric_vec(vec = init_params$nYearsMS, name = "nYearsMS", 
                                                    indices = c(1:length(new_siteInfo_indices)))
@@ -370,11 +393,13 @@ init_wrapper <- function(save_params_args = list(save_params_dir = NULL), ...) {
     new_params <- list(nYearsMS = new_nYearsMS,
                        siteInfo = new_siteInfo,
                        multiInitVar = new_multiInitVar,
+                       multiThin = new_multiThin,
                        PAR = new_PAR,
                        TAir = new_TAir,
                        VPD = new_VPD,
                        Precip = new_Precip,
                        CO2 = new_CO2)
+    
 
 
     filtered_init_params <- modifyList(init_params, new_params)
@@ -408,6 +433,8 @@ init_wrapper <- function(save_params_args = list(save_params_dir = NULL), ...) {
 
   return(initPrebas)
 }
+
+
 
 
 

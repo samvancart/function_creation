@@ -7,6 +7,7 @@ clim_list <- readRDS(config$test_clim_path)
 
 
 multiInitVar <- test_data$multiInitVar
+multiThin <- test_data$thinning
 
 PAR <- clim_list$PAR
 TAir <- clim_list$TAir
