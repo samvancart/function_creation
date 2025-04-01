@@ -43,6 +43,7 @@ dimnames(climate_data[["parTran"]][,-1])
 init_args <- list(nYearsMS = nYearsMS,
              siteInfo = as.matrix(siteInfo),
              multiInitVar = multiInitVar,
+             multiThin = NA,
              PAR = climate_data[["parTran"]][,-1], # Remove cell column (column was required for siteInfo)
              VPD = climate_data[["vpdTran"]][,-1],
              CO2 = climate_data[["co2Tran"]][,-1],
@@ -60,8 +61,8 @@ names(init_args)
 
 filtered_init_params <- do.call(init_wrapper, args)
 
-
-
+load("initMultiSiteParams_23f22862d16412_test.RData")
+init_params$multiInitVar
 
 init_params_check_function_exists("InitMultiSite")
 exists("InitMultiSite", mode = "function")
