@@ -476,6 +476,96 @@ test_that("init_params_save_to_dir saves file without suffix_name", {
 
 # TEST MAIN_FUN -----------------------------------------------------------
 
+test_that("init_wrapper runs when save_params_args is an empty list", {
+  
+  mock_save <- mock()
+  mock_InitMultiSite <- mock()
+  mock_print <- mock()
+  
+  local_mock(
+    init_params_save_to_dir = mock_save,
+    InitMultiSite = mock_InitMultiSite,
+    print = mock_print
+  )
+  
+  result <- init_wrapper(
+    nYearsMS = nYearsMS,
+    siteInfo = siteInfo,
+    multiInitVar = multiInitVar,
+    PAR = PAR,
+    TAir = TAir,
+    VPD = VPD,
+    Precip = Precip,
+    CO2 = CO2
+  )
+  
+  # Check if the mock functions were called
+  expect_called(mock_save, 0) # This asserts that the mock was NOT triggered since saving is skipped
+  expect_called(mock_InitMultiSite, 1)
+})
+
+test_that("init_wrapper returns error when save_params_args is NULL", {
+  
+  mock_save <- mock()
+  mock_InitMultiSite <- mock()
+  mock_print <- mock()
+  
+  local_mock(
+    init_params_save_to_dir = mock_save,
+    InitMultiSite = mock_InitMultiSite,
+    print = mock_print
+  )
+  
+  expect_error(init_wrapper(
+      save_params_args = NULL,
+      nYearsMS = nYearsMS,
+      siteInfo = siteInfo,
+      multiInitVar = multiInitVar,
+      PAR = PAR,
+      TAir = TAir,
+      VPD = VPD,
+      Precip = Precip,
+      CO2 = CO2
+    )
+  )
+  
+  # Check if the mock functions were called
+  expect_called(mock_save, 0) # This asserts that the mock was NOT triggered since saving is skipped
+  expect_called(mock_InitMultiSite, 0)
+})
+
+test_that("init_wrapper ignores non-existent args in save_params_args", {
+  
+  mock_save <- mock()
+  mock_InitMultiSite <- mock()
+  mock_print <- mock()
+  
+  local_mock(
+    init_params_save_to_dir = mock_save,
+    InitMultiSite = mock_InitMultiSite,
+    print = mock_print
+  )
+  
+  save_params_args <- list(save_params_dir = "mock/dir", save_n_rows = 7, not_an_arg = 1)
+  
+  result <- init_wrapper(
+    save_params_args = save_params_args,
+    nYearsMS = nYearsMS,
+    siteInfo = siteInfo,
+    multiInitVar = multiInitVar,
+    PAR = PAR,
+    TAir = TAir,
+    VPD = VPD,
+    Precip = Precip,
+    CO2 = CO2
+  )
+  
+  # Check if the mock functions were called
+  expect_called(mock_save, 1)
+  expect_called(mock_InitMultiSite, 1)
+  
+})
+
 test_that("init_wrapper runs when save_params_dir is NULL", {
 
   mock_save <- mock()
@@ -865,6 +955,7 @@ test_that("init_wrapper passes correct args to save function when NAs and NULLs 
               suffix_name = NULL,
               save_params_dir = "mock/dir")
 })
+
 
 
 

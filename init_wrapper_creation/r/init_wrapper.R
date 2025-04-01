@@ -3,7 +3,6 @@
 # VALIDATE ----------------------------------------------------------------
 
 
-
 init_params_check_missing <- function(init_params, required_init_param_names) {
   missing_init_params <- required_init_param_names[which(!required_init_param_names %in% names(init_params))]
   if(length(missing_init_params > 0)) {
@@ -15,7 +14,7 @@ init_params_check_missing <- function(init_params, required_init_param_names) {
 }
 
 
-init_params_check_valid_object <- function(object, name, null_ok = FALSE) {
+init_params_check_valid_object <- function(object, name, type = c("matrix", "array"), null_ok = FALSE, has_rows = TRUE) {
   
   if(null_ok) {
     if(all(is.null(object)) | all(is.na(object))) {
@@ -24,15 +23,18 @@ init_params_check_valid_object <- function(object, name, null_ok = FALSE) {
   }
   
   
-  if(all(!class(object) %in% c("matrix", "array"))) {
+  if(all(!class(object) %in% type)) {
     msg <- paste0("Invalid type for object ", name, ". Type is ", class(object))
     stop(msg)
   }
   
-  if(nrow(object) < 1) {
-    msg <- paste0("Object ", name, " must contain at least 1 row.")
-    stop(msg)
+  if(has_rows) {
+    if(nrow(object) < 1) {
+      msg <- paste0("Object ", name, " must contain at least 1 row.")
+      stop(msg)
+    }
   }
+
   
   return(object)
 }
@@ -324,9 +326,10 @@ init_params_save_to_dir <- function(init_params, save_params_dir, suffix_name = 
 #'
 #' @seealso \code{\link{InitMultiSite}}
 
-init_wrapper <- function(save_params_args = list(save_params_dir = NULL), ...) {
+init_wrapper <- function(save_params_args = list(), ...) {
   
   init_params_check_function_exists(fun_name = "InitMultiSite")
+  init_params_check_valid_object(object = save_params_args, name = "save_params_args", type = "list", has_rows = FALSE)
   
   if(!is.null(save_params_args$save_params_dir)) {
     
